@@ -896,7 +896,7 @@ create schema smart_comment_relations;
 
 create table smart_comment_relations.streets (
   id serial primary key,
-  name text not null
+  name text unique not null
 );
 
 create table smart_comment_relations.properties (
@@ -941,6 +941,7 @@ create view smart_comment_relations.houses as (
   on (buildings.property_id = properties.id and buildings.is_primary is true)
 );
 comment on view smart_comment_relations.houses is E'@primaryKey street_id,property_id
+@uniqueKey street_name
 @foreignKey (street_id) references smart_comment_relations.streets
 @foreignKey (building_id) references smart_comment_relations.buildings (id)
 @foreignKey (property_id) references properties

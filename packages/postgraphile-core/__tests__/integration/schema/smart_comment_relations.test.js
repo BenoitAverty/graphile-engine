@@ -98,3 +98,17 @@ comment on view smart_comment_relations.offer_view is E'@name offers
     }
   )
 );
+
+test(
+  "unique index on view",
+  core.test(
+    ["smart_comment_relations"],
+    {},
+    () => {},
+    schema => {
+      const queries = schema.getType("Query").getFields();
+
+      expect(queries.houseByStreetName).toBeTruthy();
+    }
+  )
+);

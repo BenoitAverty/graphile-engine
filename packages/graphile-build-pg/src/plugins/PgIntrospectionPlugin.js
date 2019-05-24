@@ -273,7 +273,7 @@ function smartCommentConstraints(introspectionResults) {
     });
   };
 
-  // First: primary keys
+  // First: primary keys and unique constraints
   introspectionResults.class.forEach(klass => {
     const namespace = introspectionResults.namespace.find(
       n => n.id === klass.namespaceId
@@ -310,6 +310,42 @@ function smartCommentConstraints(introspectionResults) {
         id: Math.random(),
         name: `FAKE_${klass.namespaceName}_${klass.name}_primaryKey`,
         type: "p", // primary key
+        classId: klass.id,
+        foreignClassId: null,
+        comment: null,
+        description,
+        keyAttributeNums,
+        foreignKeyAttributeNums: null,
+        tags,
+      };
+      introspectionResults.constraint.push(fakeConstraint);
+    }
+    if (klass.tags.uniqueKey) {
+      if (typeof klass.tags.uniqueKey !== "string") {
+        throw new Error(
+          `@uniqueKey configuration of '${klass.namespaceName}.${
+            klass.name
+          }' is invalid; please specify just once "@uniqueKey col1,col2"`
+        );
+      }
+      const { spec: uniqueKeySpec, tags, description } = parseConstraintSpec(
+        klass.tags.uniqueKey
+      );
+      // $FlowFixMe
+      const columns: string[] = parseSqlColumn(uniqueKeySpec, true);
+      const attributes = attributesByNames(
+        klass,
+        columns,
+        `@uniqueKey ${klass.tags.uniqueKey}`
+      );
+      const keyAttributeNums = attributes.map(a => a.num);
+      // Now we need to fake a constraint for this:
+      const fakeConstraint = {
+        kind: "constraint",
+        isFake: true,
+        id: Math.random(),
+        name: `FAKE_${klass.namespaceName}_${klass.name}_uniqueKey`,
+        type: "u", // primary key
         classId: klass.id,
         foreignClassId: null,
         comment: null,

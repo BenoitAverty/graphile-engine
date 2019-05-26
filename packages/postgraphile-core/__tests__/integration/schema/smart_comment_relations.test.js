@@ -112,3 +112,17 @@ test(
     }
   )
 );
+
+test(
+  "unique index on view (2 columns)",
+  core.test(
+    ["smart_comment_relations"],
+    {},
+    () => {},
+    schema => {
+      const queries = schema.getType("Query").getFields();
+
+      expect(queries.candidatesByFirstNameAndLastName).toBeTruthy();
+    }
+  )
+);

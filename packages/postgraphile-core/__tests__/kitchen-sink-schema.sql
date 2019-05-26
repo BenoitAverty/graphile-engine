@@ -957,9 +957,18 @@ create table smart_comment_relations.post (
 comment on table smart_comment_relations.post is E'@name post_table
 @omit';
 
+create table smart_comment_relations.candidate (
+  id serial primary key,
+  first_name text not null,
+  last_name text not null
+);
+comment on table smart_comment_relations.candidate is E'@name candidates_table
+@omit';
+
 create table smart_comment_relations.offer (
   id serial primary key,
-  post_id text references smart_comment_relations.post(id) not null
+  post_id text references smart_comment_relations.post(id) not null,
+  candidate_id serial references smart_comment_relations.candidate(id) not null
 );
 comment on table smart_comment_relations.offer is E'@name offer_table
 @omit';
@@ -971,15 +980,27 @@ create view smart_comment_relations.post_view as
 comment on view smart_comment_relations.post_view is E'@name posts
 @primaryKey id';
 
+create view smart_comment_relations.candidate_view as
+  SELECT
+    candidate.id,
+    candidate.first_name,
+    candidate.last_name
+    FROM smart_comment_relations.candidate candidate;
+comment on view smart_comment_relations.candidate_view is E'@name candidates
+@uniqueKey id
+@uniqueKey first_name,last_name';
+
 create view smart_comment_relations.offer_view as
   SELECT
     offer.id,
-    offer.post_id
-
+    offer.post_id,
+    offer.candidate_id
     FROM smart_comment_relations.offer offer;
 comment on view smart_comment_relations.offer_view is E'@name offers
 @primaryKey id
-@foreignKey (post_id) references post_view (id)';
+@foreignKey (post_id) references post_view (id)
+@foreignKey (candidate_id) references candidate_view (id)';
+
 
 create schema ranges;
 create table ranges.range_test (

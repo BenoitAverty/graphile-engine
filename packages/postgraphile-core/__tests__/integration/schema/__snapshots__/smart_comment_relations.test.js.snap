@@ -1620,6 +1620,7 @@ type Query implements Node {
     nodeId: ID!
   ): House
   houseByStreetIdAndPropertyId(propertyId: Int!, streetId: Int!): House
+  houseByStreetName(streetName: String!): House
 
   \\"\\"\\"Fetches an object given its globally unique \`ID\`.\\"\\"\\"
   node(
@@ -3943,6 +3944,7 @@ type Query implements Node {
     nodeId: ID!
   ): House
   houseByStreetIdAndPropertyId(propertyId: Int!, streetId: Int!): House
+  houseByStreetName(streetName: String!): House
 
   \\"\\"\\"Fetches an object given its globally unique \`ID\`.\\"\\"\\"
   node(
@@ -6301,6 +6303,7 @@ type Query implements Node {
     nodeId: ID!
   ): House
   houseByStreetIdAndPropertyId(propertyId: Int!, streetId: Int!): House
+  houseByStreetName(streetName: String!): House
 
   \\"\\"\\"Fetches an object given its globally unique \`ID\`.\\"\\"\\"
   node(
@@ -7511,6 +7514,40 @@ type DeleteOfferPayload {
   query: Query
 }
 
+\\"\\"\\"All input for the \`deletePostById\` mutation.\\"\\"\\"
+input DeletePostByIdInput {
+  \\"\\"\\"
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  \\"\\"\\"
+  clientMutationId: String
+  id: String!
+}
+
+\\"\\"\\"The output of our delete \`Post\` mutation.\\"\\"\\"
+type DeletePostPayload {
+  \\"\\"\\"
+  The exact same \`clientMutationId\` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  \\"\\"\\"
+  clientMutationId: String
+  deletedPostViewId: ID
+
+  \\"\\"\\"The \`Post\` that was deleted by this mutation.\\"\\"\\"
+  post: Post
+
+  \\"\\"\\"An edge for our \`Post\`. May be used by Relay 1.\\"\\"\\"
+  postEdge(
+    \\"\\"\\"The method to use when ordering \`Post\`.\\"\\"\\"
+    orderBy: [PostsOrderBy!] = [NATURAL]
+  ): PostsEdge
+
+  \\"\\"\\"
+  Our root query field type. Allows us to run any query from our mutation payload.
+  \\"\\"\\"
+  query: Query
+}
+
 \\"\\"\\"All input for the \`deletePropertyById\` mutation.\\"\\"\\"
 input DeletePropertyByIdInput {
   \\"\\"\\"
@@ -7858,6 +7895,14 @@ type Mutation {
     input: DeleteOfferByIdInput!
   ): DeleteOfferPayload
 
+  \\"\\"\\"Deletes a single \`Post\` using a unique key.\\"\\"\\"
+  deletePostById(
+    \\"\\"\\"
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    \\"\\"\\"
+    input: DeletePostByIdInput!
+  ): DeletePostPayload
+
   \\"\\"\\"Deletes a single \`Property\` using its globally unique id.\\"\\"\\"
   deleteProperty(
     \\"\\"\\"
@@ -7945,6 +7990,14 @@ type Mutation {
     \\"\\"\\"
     input: UpdateOfferByIdInput!
   ): UpdateOfferPayload
+
+  \\"\\"\\"Updates a single \`Post\` using a unique key and a patch.\\"\\"\\"
+  updatePostById(
+    \\"\\"\\"
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    \\"\\"\\"
+    input: UpdatePostByIdInput!
+  ): UpdatePostPayload
 
   \\"\\"\\"Updates a single \`Property\` using its globally unique id and a patch.\\"\\"\\"
   updateProperty(
@@ -8146,6 +8199,11 @@ input PostCondition {
 
 \\"\\"\\"An input for mutations affecting \`Post\`\\"\\"\\"
 input PostInput {
+  id: String
+}
+
+\\"\\"\\"Represents an update to a \`Post\`. Fields that are set will be updated.\\"\\"\\"
+input PostPatch {
   id: String
 }
 
@@ -8570,6 +8628,7 @@ type Query implements Node {
     nodeId: ID!
   ): House
   houseByStreetIdAndPropertyId(propertyId: Int!, streetId: Int!): House
+  houseByStreetName(streetName: String!): House
 
   \\"\\"\\"Fetches an object given its globally unique \`ID\`.\\"\\"\\"
   node(
@@ -8588,6 +8647,7 @@ type Query implements Node {
     nodeId: ID!
   ): Offer
   offerById(id: Int!): Offer
+  postById(id: String!): Post
 
   \\"\\"\\"Reads a single \`Property\` using its globally unique \`ID\`.\\"\\"\\"
   property(
@@ -9042,6 +9102,44 @@ type UpdateOfferPayload {
 
   \\"\\"\\"Reads a single \`Post\` that is related to this \`Offer\`.\\"\\"\\"
   postByPostId: Post
+
+  \\"\\"\\"
+  Our root query field type. Allows us to run any query from our mutation payload.
+  \\"\\"\\"
+  query: Query
+}
+
+\\"\\"\\"All input for the \`updatePostById\` mutation.\\"\\"\\"
+input UpdatePostByIdInput {
+  \\"\\"\\"
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  \\"\\"\\"
+  clientMutationId: String
+  id: String!
+
+  \\"\\"\\"
+  An object where the defined keys will be set on the \`Post\` being updated.
+  \\"\\"\\"
+  postPatch: PostPatch!
+}
+
+\\"\\"\\"The output of our update \`Post\` mutation.\\"\\"\\"
+type UpdatePostPayload {
+  \\"\\"\\"
+  The exact same \`clientMutationId\` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  \\"\\"\\"
+  clientMutationId: String
+
+  \\"\\"\\"The \`Post\` that was updated by this mutation.\\"\\"\\"
+  post: Post
+
+  \\"\\"\\"An edge for our \`Post\`. May be used by Relay 1.\\"\\"\\"
+  postEdge(
+    \\"\\"\\"The method to use when ordering \`Post\`.\\"\\"\\"
+    orderBy: [PostsOrderBy!] = [NATURAL]
+  ): PostsEdge
 
   \\"\\"\\"
   Our root query field type. Allows us to run any query from our mutation payload.
@@ -10867,6 +10965,7 @@ type Query implements Node {
     nodeId: ID!
   ): House
   houseByStreetIdAndPropertyId(propertyId: Int!, streetId: Int!): House
+  houseByStreetName(streetName: String!): House
 
   \\"\\"\\"Fetches an object given its globally unique \`ID\`.\\"\\"\\"
   node(

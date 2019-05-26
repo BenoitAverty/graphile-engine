@@ -255,7 +255,7 @@ function smartCommentConstraints(introspectionResults) {
       } else {
         throw new Error(
           `No columns specified for '${tbl.namespaceName}.${tbl.name}' (oid: ${
-            tbl.id
+          tbl.id
           }) and no PK found (${debugStr}).`
         );
       }
@@ -265,7 +265,7 @@ function smartCommentConstraints(introspectionResults) {
       if (!attr) {
         throw new Error(
           `Could not find attribute '${colName}' in '${tbl.namespaceName}.${
-            tbl.name
+          tbl.name
           }'`
         );
       }
@@ -285,7 +285,7 @@ function smartCommentConstraints(introspectionResults) {
       if (typeof klass.tags.primaryKey !== "string") {
         throw new Error(
           `@primaryKey configuration of '${klass.namespaceName}.${
-            klass.name
+          klass.name
           }' is invalid; please specify just once "@primaryKey col1,col2"`
         );
       }
@@ -321,40 +321,46 @@ function smartCommentConstraints(introspectionResults) {
       introspectionResults.constraint.push(fakeConstraint);
     }
     if (klass.tags.uniqueKey) {
-      if (typeof klass.tags.uniqueKey !== "string") {
+      const createUniqueConstraint = uniqueKeyTag => {
+        const { spec: uniqueKeySpec, tags, description } = parseConstraintSpec(
+          uniqueKeyTag
+        );
+        // $FlowFixMe
+        const columns: string[] = parseSqlColumn(uniqueKeySpec, true);
+        const attributes = attributesByNames(
+          klass,
+          columns,
+          `@uniqueKey ${uniqueKeyTag}`
+        );
+        const keyAttributeNums = attributes.map(a => a.num);
+        // Now we need to fake a constraint for this:
+        const fakeConstraint = {
+          kind: "constraint",
+          isFake: true,
+          id: Math.random(),
+          name: `FAKE_${klass.namespaceName}_${klass.name}_uniqueKey`,
+          type: "u", // primary key
+          classId: klass.id,
+          foreignClassId: null,
+          comment: null,
+          description,
+          keyAttributeNums,
+          foreignKeyAttributeNums: null,
+          tags,
+        };
+        introspectionResults.constraint.push(fakeConstraint);
+      };
+      if (Array.isArray(klass.tags.uniqueKey)) {
+        klass.tags.uniqueKey.forEach(createUniqueConstraint);
+      } else if (typeof klass.tags.uniqueKey === "string") {
+        createUniqueConstraint(klass.tags.uniqueKey);
+      } else {
         throw new Error(
           `@uniqueKey configuration of '${klass.namespaceName}.${
-            klass.name
-          }' is invalid; please specify just once "@uniqueKey col1,col2"`
+          klass.name
+          }' is invalid; please specify "@uniqueKey col1,col2" for each unique constraint.`
         );
       }
-      const { spec: uniqueKeySpec, tags, description } = parseConstraintSpec(
-        klass.tags.uniqueKey
-      );
-      // $FlowFixMe
-      const columns: string[] = parseSqlColumn(uniqueKeySpec, true);
-      const attributes = attributesByNames(
-        klass,
-        columns,
-        `@uniqueKey ${klass.tags.uniqueKey}`
-      );
-      const keyAttributeNums = attributes.map(a => a.num);
-      // Now we need to fake a constraint for this:
-      const fakeConstraint = {
-        kind: "constraint",
-        isFake: true,
-        id: Math.random(),
-        name: `FAKE_${klass.namespaceName}_${klass.name}_uniqueKey`,
-        type: "u", // primary key
-        classId: klass.id,
-        foreignClassId: null,
-        comment: null,
-        description,
-        keyAttributeNums,
-        foreignKeyAttributeNums: null,
-        tags,
-      };
-      introspectionResults.constraint.push(fakeConstraint);
     }
   });
   // Now primary keys are in place, we can apply foreign keys
@@ -374,7 +380,7 @@ function smartCommentConstraints(introspectionResults) {
       if (!Array.isArray(foreignKeys)) {
         throw new Error(
           `Invalid foreign key smart comment specified on '${
-            klass.namespaceName
+          klass.namespaceName
           }.${klass.name}'`
         );
       }
@@ -382,7 +388,7 @@ function smartCommentConstraints(introspectionResults) {
         if (typeof fkSpecRaw !== "string") {
           throw new Error(
             `Invalid foreign key spec (${index}) on '${klass.namespaceName}.${
-              klass.name
+            klass.name
             }'`
           );
         }
@@ -395,7 +401,7 @@ function smartCommentConstraints(introspectionResults) {
         if (!matches) {
           throw new Error(
             `Invalid foreignKey syntax for '${klass.namespaceName}.${
-              klass.name
+            klass.name
             }'; expected something like "(col1,col2) references schema.table (c1, c2)", you passed '${fkSpecRaw}'`
           );
         }
@@ -989,7 +995,7 @@ export default (async function PgIntrospectionPlugin(
         if (payload.type === "ddl") {
           const commands = payload.payload
             .filter(
-              ({ schema }) => schema == null || schemas.indexOf(schema) >= 0
+            ({ schema }) => schema == null || schemas.indexOf(schema) >= 0
             )
             .map(({ command }) => command);
           if (commands.length) {

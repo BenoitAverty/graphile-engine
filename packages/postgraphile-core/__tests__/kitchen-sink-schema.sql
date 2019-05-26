@@ -962,6 +962,7 @@ create table smart_comment_relations.candidate (
   first_name text not null,
   last_name text not null
 );
+create unique index on smart_comment_relations.candidate (first_name, last_name);
 comment on table smart_comment_relations.candidate is E'@name candidates_table
 @omit';
 
